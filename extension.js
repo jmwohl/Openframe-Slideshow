@@ -7,7 +7,8 @@ var pjson = require('./package.json'),
     Extension = require('openframe-extension');
 
 // default interval in minutes
-var DEFAULT_INTERVAL = 60;
+// TODO: for wider release a longer default interval is probably better
+var DEFAULT_INTERVAL = 1;
 
 /**
  * Extension initialization method.
