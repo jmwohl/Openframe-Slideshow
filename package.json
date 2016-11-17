@@ -1,0 +1,38 @@
+{
+  "name": "openframe-slideshow",
+  "version": "0.1.0",
+  "description": "An Openframe extension which loops through a users collection on a timed interval.",
+  "main": "extension.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "patch-release": "npm version patch && npm publish && git push --follow-tags"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jmwohl/Openframe-Slideshow.git"
+  },
+  "keywords": [
+    "openframe",
+    "extension",
+    "slideshow"
+  ],
+  "author": {
+    "name": "Jonathan Wohl",
+    "url": "http://jonathanwohl.com"
+  },
+  "contributors": [
+    {
+      "name": "Jonathan Wohl",
+      "url": "http://jonathanwohl.com"
+    }
+  ],
+  "license": "GPL-3.0",
+  "bugs": {
+    "url": "https://github.com/jmwohl/Openframe-Slideshow/issues"
+  },
+  "homepage": "https://github.com/jmwohl/Openframe-Slideshow#readme",
+  "dependencies": {
+    "openframe-extension": "^0.1.0",
+    "debug": "^2.2.0"
+  }
+}
