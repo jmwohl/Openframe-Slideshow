@@ -1,6 +1,6 @@
 {
   "name": "openframe-slideshow",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "An Openframe extension which loops through a users collection on a timed interval.",
   "main": "extension.js",
   "scripts": {
