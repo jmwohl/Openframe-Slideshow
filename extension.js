@@ -43,16 +43,7 @@ module.exports = new Extension({
         var fetching = false;
         var duration;
 
-        // if set for frame, use frame-level default duration
-        if (frame.state.settings && frame.state.settings[pjson.name] && frame.state.settings[pjson.name].duration) {
-            duration = minToMillis(frame.state.settings[pjson.name].duration);
-        } else {
-            duration = minToMillis(DEFAULT_DURATION);
-        }
-
-        debug('duration', duration);
-
-        var timer = setTimeout(getNextFromCollection, duration);
+        getNextFromCollection();
 
         /**
          * Use the REST API to fetch the collection, then select a random artwork to display.
