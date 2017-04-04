@@ -39,11 +39,10 @@ module.exports = new Extension({
          */
         var frame = this.frame;
 
-        // used to debounce requests... don't make more than one request at a time
-        var fetching = false;
-        var duration;
+        var duration = getDuration(frame.state, frame.state.current_artwork);
+        debug('duration', duration);
 
-        getNextFromCollection();
+        var timer = setTimeout(getNextFromCollection, duration);
 
         /**
          * Use the REST API to fetch the collection, then select a random artwork to display.
@@ -51,7 +50,6 @@ module.exports = new Extension({
         function getNextFromCollection() {
             debug('getNextFromCollection', duration);
 
-            fetching = true;
             // get the logged-in user's primary collection
             rest.OpenframeUser.OpenframeUser_prototype_get_created_artwork({
                 id: 'current'
@@ -81,23 +79,13 @@ module.exports = new Extension({
                 }
 
                 nextArtwork = artworkList[idx];
-
                 debug('nextArtwork', nextArtwork);
 
                 // allow artwork-specific durations
-                if (nextArtwork.settings && nextArtwork.settings[pjson.name] && nextArtwork.settings[pjson.name].duration) {
-                    duration = minToMillis(nextArtwork.settings[pjson.name].duration);
-                } else {
-                    if (frame.state.settings && frame.state.settings[pjson.name] && frame.state.settings[pjson.name].duration) {
-                        duration = minToMillis(frame.state.settings[pjson.name].duration);
-                    } else {
-                        duration = minToMillis(DEFAULT_DURATION);
-                    }
-                }
-
+                var duration = getDuration(frame.state, nextArtwork);
                 debug('duration', duration);
+
                 // frame.state is the plain JS object representing the frame's state...
-                // set the _current_artwork to be the randomArtwork
                 frame.state.currentArtworkId = nextArtwork.id;
 
                 // then save the frame to the server. when the db is updated on the server, the server
@@ -106,7 +94,6 @@ module.exports = new Extension({
                 frame.save()
                     .then(function() {
                         debug('Success...');
-                        fetching = false;
                         timer = setTimeout(getNextFromCollection, duration);
                     })
                     .catch(function(err) {
@@ -115,6 +102,18 @@ module.exports = new Extension({
             }).catch(function(err) {
                 debug('ERROR: ', err);
             });
+        }
+
+        function getDuration(frameState, artwork) {
+            var duration;
+            if (artwork.settings && artwork.settings[pjson.name] && artwork.settings[pjson.name].duration) {
+                duration = minToMillis(artwork.settings[pjson.name].duration);
+            } else if (frameState.settings && frameState.settings[pjson.name] && frameState.settings[pjson.name].duration) {
+                duration = minToMillis(frameState.settings[pjson.name].duration);
+            } else {
+                duration = minToMillis(DEFAULT_DURATION);
+            }
+            return duration;
         }
 
         function minToMillis(min) {
