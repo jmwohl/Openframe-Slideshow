@@ -83,7 +83,7 @@ module.exports = new Extension({
                 idx = idx === -1 ? 0 : idx;
 
                 // next idx
-                if (idx < len - 2) {
+                if (idx < len - 1) {
                     idx += 1;
                 } else {
                     idx = 0;
