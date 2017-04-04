@@ -7,8 +7,7 @@ var pjson = require('./package.json'),
     Extension = require('openframe-extension');
 
 // default duration in minutes
-// TODO: for wider release a longer default duration is probably better
-var DEFAULT_DURATION = .1;
+var DEFAULT_DURATION = 1;
 
 /**
  * Extension initialization method.
