@@ -1,14 +1,14 @@
 /**
- * An Openframe extension which loops through a users collection on a timed interval.
+ * An Openframe extension which loops through a users collection on a timed duration.
  */
 
 var pjson = require('./package.json'),
     debug = require('debug')('openframe:slideshow'),
     Extension = require('openframe-extension');
 
-// default interval in minutes
-// TODO: for wider release a longer default interval is probably better
-var DEFAULT_INTERVAL = 1;
+// default duration in minutes
+// TODO: for wider release a longer default duration is probably better
+var DEFAULT_DURATION = .1;
 
 /**
  * Extension initialization method.
@@ -41,34 +41,34 @@ module.exports = new Extension({
 
         // used to debounce requests... don't make more than one request at a time
         var fetching = false;
-        var interval;
+        var duration;
 
-        // if set for frame, use interval
-        if (frame.state.settings && frame.state.settings[pjson.name] && frame.state.settings[pjson.name].interval) {
-            interval = minToMillis(frame.state.settings[pjson.name].interval);
+        // if set for frame, use frame-level default duration
+        if (frame.state.settings && frame.state.settings[pjson.name] && frame.state.settings[pjson.name].duration) {
+            duration = minToMillis(frame.state.settings[pjson.name].duration);
         } else {
-            interval = minToMillis(DEFAULT_INTERVAL);
+            duration = minToMillis(DEFAULT_DURATION);
         }
 
-        debug('interval', interval);
+        debug('duration', duration);
 
-        var timer = setInterval(getNextFromCollection, interval);
+        var timer = setTimeout(getNextFromCollection, duration);
 
         /**
          * Use the REST API to fetch the collection, then select a random artwork to display.
          */
         function getNextFromCollection() {
-            debug('getNextFromCollection', interval);
+            debug('getNextFromCollection', duration);
 
             fetching = true;
             // get the logged-in user's primary collection
-            rest.OpenframeUser.OpenframeUser_prototype_primary_collection({
+            rest.OpenframeUser.OpenframeUser_prototype_get_created_artwork({
                 id: 'current'
             }).then(function(data) {
-                // the list of artwork from the collection
-                var artworkList = data.obj.collection.artwork,
+                console.log(data);
+                var artworkList = data.obj,
                     len = artworkList.length,
-                    currentArtworkId = frame.state._current_artwork && frame.state._current_artwork.id,
+                    currentArtworkId = frame.state.current_artwork && frame.state.current_artwork.id,
                     nextArtwork;
 
                 debug('currentArtworkId', currentArtworkId);
@@ -91,9 +91,23 @@ module.exports = new Extension({
 
                 nextArtwork = artworkList[idx];
 
+                debug('nextArtwork', nextArtwork);
+
+                // allow artwork-specific durations
+                if (nextArtwork.settings && nextArtwork.settings[pjson.name] && nextArtwork.settings[pjson.name].duration) {
+                    duration = minToMillis(nextArtwork.settings[pjson.name].duration);
+                } else {
+                    if (frame.state.settings && frame.state.settings[pjson.name] && frame.state.settings[pjson.name].duration) {
+                        duration = minToMillis(frame.state.settings[pjson.name].duration);
+                    } else {
+                        duration = minToMillis(DEFAULT_DURATION);
+                    }
+                }
+
+                debug('duration', duration);
                 // frame.state is the plain JS object representing the frame's state...
                 // set the _current_artwork to be the randomArtwork
-                frame.state._current_artwork = nextArtwork;
+                frame.state.currentArtworkId = nextArtwork.id;
 
                 // then save the frame to the server. when the db is updated on the server, the server
                 // will trigger a 'frame updated' event, which will in turn update this frame, forcing
@@ -102,6 +116,7 @@ module.exports = new Extension({
                     .then(function() {
                         debug('Success...');
                         fetching = false;
+                        timer = setTimeout(getNextFromCollection, duration);
                     })
                     .catch(function(err) {
                         debug('ERROR: ', err);
