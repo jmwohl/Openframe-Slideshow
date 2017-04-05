@@ -118,5 +118,10 @@ module.exports = new Extension({
         function minToMillis(min) {
             return min * 60000;
         }
+    },
+
+    settings: {
+        duration: 1,
+        enabled: true
     }
 });
